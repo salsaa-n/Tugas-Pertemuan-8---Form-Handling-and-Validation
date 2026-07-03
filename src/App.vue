@@ -3,16 +3,16 @@
 
 <template>
   <header>
-    <img alt="Vue logo" class="logo" src="./assets/logo.svg" width="125" height="125" />
+    
 
-    <div class="wrapper">
+    <!-- <div class="wrapper">
       <HelloWorld msg="Welcome!" />
     
-    </div>
+    </div> -->
   </header>
 
   <main>
-    <RouterView/>
+    <RouterView />
   </main>
 </template>
 
