@@ -48,6 +48,7 @@ app.get('/api/users', async (req, res) => {
     return res.status(500).json({ message: 'Gagal mengambil data users.' });
   }
 });
+
 app.post('/api/auth/register', async (req, res) => {
   const { username, email, password, confirmPassword } = req.body;
 
@@ -179,6 +180,58 @@ app.post('/api/auth/reset-password', async (req, res) => {
     return res.status(500).json({ message: 'Gagal memproses reset password.' });
   }
 });
+
+app.get('/api/prayer-times', async (req, res) => {
+  const city = req.query.city || 'Jakarta';
+  const country = req.query.country || 'Indonesia';
+  const method = req.query.method || '20'; // 20 = Kemenag RI
+
+  try {
+    const response = await fetch(
+      `https://api.aladhan.com/v1/timingsByCity?city=${encodeURIComponent(city)}&country=${encodeURIComponent(country)}&method=${method}`
+    );
+
+    if (!response.ok) {
+      return res.status(502).json({ message: 'Gagal mengambil data dari Aladhan API.' });
+    }
+
+    const data = await response.json();
+
+    if (data.code !== 200) {
+      return res.status(502).json({ message: 'Data jadwal sholat tidak tersedia.' });
+    }
+
+    const { timings, date } = data.data;
+    return res.json({
+      timings: {
+        Fajr: timings.Fajr,
+        Dhuhr: timings.Dhuhr,
+        Asr: timings.Asr,
+        Maghrib: timings.Maghrib,
+        Isha: timings.Isha,
+        // Waktu tambahan
+        Sunrise: timings.Sunrise,
+        Midnight: timings.Midnight,
+        Imsak: timings.Imsak,
+        Lastthird: timings.Lastthird,
+      },
+      hijri: {
+        day: date.hijri.day,
+        month: date.hijri.month.en,
+        year: date.hijri.year,
+      },
+      gregorian: {
+        date: date.gregorian.date,
+        month: date.gregorian.month.en,
+        year: date.gregorian.year,
+      },
+    });
+  } catch (_error) {
+    return res.status(500).json({ message: 'Terjadi kesalahan saat mengambil jadwal sholat.' });
+  }
+});
+
+
 
 app.listen(port, () => {
   console.log(`Backend running on http://localhost:${port}`);
